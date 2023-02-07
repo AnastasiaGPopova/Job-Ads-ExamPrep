@@ -3,12 +3,12 @@
 const config = {
     production: {
         PORT: 1245,
-        DB_uri: "mongodb://127.0.0.1:27017/RealEstate",
+        DB_uri: "mongodb://127.0.0.1:27017/JobAd",
         SECRET: 'SOMEPRODUCTIONSECRET'
     },
     development: {
         PORT: 3000,
-        DB_uri: "mongodb://127.0.0.1:27017/RealEstate",
+        DB_uri: "mongodb://127.0.0.1:27017/JobAd",
         SECRET: 'SOMEDEVSECRET'
     }
 }

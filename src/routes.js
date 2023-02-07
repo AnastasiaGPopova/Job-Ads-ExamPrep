@@ -6,7 +6,7 @@ const router = Router()
 
 
 //----- importing the controllers----------
-const houseController = require('./controllers/houseController')
+const adController = require('./controllers/adController')
 const homeController = require('./controllers/homeController')
 const authController = require('./controllers/authController.js')
 const {isAuthenticated} = require('./middlewares/authMiddleware.js')

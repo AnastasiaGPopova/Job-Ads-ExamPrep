@@ -2,22 +2,26 @@ const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
 
 const userSchema = new mongoose.Schema({
-    name: {
+    email: {
         type: String,
         required: true,
-        match: /[A-Z][a-z]+ [A-Z][a-z]+/,
+        match: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
         //minLength: [3, "First name should be at least 3 characters long!"]
-    },
-    username: {
-        type: String,
-        required: true,
-        minLength: [5, "Username should be at least 3 characters long!"]
     },
     password : {
         type: String,
         required: true,
         minLength: [4, 'Password too short!']
     },
+    skills : {
+        type: String,
+        required: true,
+        //minLength: [4, 'Password too short!']
+    },
+    myAds:[{
+        type: mongoose.Types.ObjectId,
+        ref: 'Ad'
+    }]
  })
 
  userSchema.pre('save', function(next){

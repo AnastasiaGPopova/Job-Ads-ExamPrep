@@ -1,13 +1,11 @@
 //const Post = require('../models/Post.js')
 const User = require('../models/User')
 const { all } = require('../routes')
-const housingService = require('../services/housingService')
+const adService = require('../services/adService')
 
 
 exports.getHomePage = async (req, res) => {
-        const sorted = await housingService.getLastAdded().lean()
-        const lastAdded = sorted.slice(0,3)
-        res.render('home', {lastAdded})
+        res.render('home')
 }
 
 
