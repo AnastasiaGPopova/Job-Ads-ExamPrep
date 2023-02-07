@@ -10,23 +10,23 @@ exports.registerPage = (req,res) => {
 }
 
 exports.postRegisterUser = async (req, res) => {
-    const {name, username, password, rePassword} = req.body
+    const {email, password, rePassword, skills} = req.body
 
-    const existingUsername = await authService.getUserByUsername(username)
+    const existingUser = await authService.getUserByEmail(email)
     try{
         if(password !== rePassword) {
             throw new Error ("Passwords do not match!")
         }
 
-        if(name == "" || username == "" ||  password == "" || rePassword == ""){
+        if(password == "" || rePassword == "" || !email || !skills){
             throw new Error ("All fields are requiered!")
         }
 
-        if(existingUsername){
-            throw new Error("Username is already taken!")
+        if(existingUser){
+            throw new Error("Email is already taken!")
         }
 
-        const token = await authService.register(name, username, password)
+        const token = await authService.register(email, password, skills)
         res.cookie('auth', token, {httpOnly: true})
         res.redirect('/')
 
@@ -38,17 +38,17 @@ exports.postRegisterUser = async (req, res) => {
 }
 
 exports.postLoginUser = async (req, res) => {
-    const {username, password} = req.body
+    const {email, password} = req.body
 
-    const existingUser = await authService.getUserByUsername(username)
+    const existingUser = await authService.getUserByEmail(email)
 
     try{
-        if(username =="" || password ==""){
+        if(email =="" || password ==""){
             throw new Error ("All fields are requiered!")
         }
 
         if(!existingUser){ //we call the modell method
-            throw new Error ("Invalid username or password!")
+            throw new Error ("Invalid email or password!")
          }
 
         const token = await authService.login(existingUser, password)

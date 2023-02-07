@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        match: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+        match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, "Invalid email"],
         //minLength: [3, "First name should be at least 3 characters long!"]
     },
     password : {
@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
     skills : {
         type: String,
         required: true,
-        //minLength: [4, 'Password too short!']
+        maxLength: [40, 'Password too long! Description of skills should be max 40 characters!']
     },
     myAds:[{
         type: mongoose.Types.ObjectId,

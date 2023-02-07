@@ -5,13 +5,15 @@ const adService = require('../services/adService')
 
 
 exports.getHomePage = async (req, res) => {
-        res.render('home')
+        const sortedJobs = await adService.getfirstAdded().populate('usersApplied').lean()
+        const first3jobs = sortedJobs.slice(0,3)
+        res.render('home', {first3jobs})
 }
 
 
-exports.getCatalogPage = async (req, res) => {
-        const allHouses = await housingService.getAllHouses().lean()
-        res.render('aprt-for-recent', {allHouses})
+exports.getAllAds = async (req, res) => {
+        const allAds = await adService.getAllAds().lean()
+        res.render('all-ads', {allAds})
 }
 // exports.getProfilePage = async (req,res) => {
 //     const currentUser = await User.findById(req.user._id).lean()

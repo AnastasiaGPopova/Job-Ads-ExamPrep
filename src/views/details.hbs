@@ -1,0 +1,62 @@
+
+
+        <main>
+
+            <section id="details-page">
+                <article class="details-gage-title">
+                    <h1>Details Page</h1>
+                </article>
+                <article class="details-page-card">
+
+                    <article class="details-page-card-image">
+                        <!-- Do not forget to change the path to the image -->
+                        <img src="/img/man.png" alt="details-image">
+                    </article>
+
+                    <article class="details-page-card-content">
+                        <p>Author: {{currentAd.author.email}}</p>
+                        <h2>Headline: {{currentAd.headline}}</h2>
+                        <h3>Company name: {{currentAd.name}}</h3>
+                        <h4>Company description: {{currentAd.description}}</h4>
+                        <h5>Location: Location {{currentAd.location}}</h5>
+
+                        {{#if isLogged}}
+
+                        <article class="details-page-card-buttons">
+                            <!--only for registered users and author of the ad-->
+                            {{#if isOwner}}
+                            <a href="/{{currentAd._id}}/edit" class="btn-edit">Edit</a>
+                            <a href="/{{currentAd._id}}/delete" class="btn-delete">Delete</a>
+
+                            <!--logged in user who did not apply for current ad-->
+                            {{else}}
+
+                            {{#if isAppliedByCurrentUser}}
+                            <p class="already-applied">You have already applied!</p>
+                            {{else}}
+                            <a href="/{{currentAd._id}}/apply" class="btn-apply">Apply now!</a>
+                            <p class="applied-people">Hurry up, {{appliedBy.length}} people have already applied.</p>
+                            {{/if}}
+                            {{/if}}
+                        </article>
+                        {{/if}}
+                    </article>
+
+                </article>
+            </section>
+
+            <!--This section should only be visible to the author of the current ad-->
+            {{#if isOwner}}
+            <section id="info-about-candidates">
+                <h2>Candidates for this ad:</h2>
+                {{!-- <!\--If there are people who have applied, show each of them in the following format--\> --}}
+                {{#if thereIsCandidates}}
+                {{#each appliedBy}}
+                {{> candidate}}
+                {{/each}}
+                {{!-- <!\--If not, you don't need to visualize anything further-\-> --}}
+                {{/if}}
+            </section>
+            {{/if}}
+
+        </main>

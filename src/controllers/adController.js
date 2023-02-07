@@ -6,141 +6,130 @@ const parser = require('../utils/parser')
 
 
 
-exports.getHouseCreationPage = (req,res) => {
+exports.getAdCreationPage = (req,res) => {
     res.render('create')
 }
 
-// exports.postCreatedHouse = async (req, res) => {
-//  const {name, type, year, city, imageUrl, description, prices} = req.body
+exports.postCreatedAd = async (req, res) => {
+ const {headline, location, name, description } = req.body
 
-//     try{
-//         if(!name || !type || !year || !city || !imageUrl || !description || !prices){
-//             throw new Error ("All fields are requiered!")
-//         }
-//         const newHouse = await housingService.createNewHouse({name, type, year, city, imageUrl, description, prices, owner: req.user._id})//encoded body-to, which we receive, will create a new cube
-//         //redirect
-//         res.redirect('/')
+    try{
+        if(!headline || !location || !name || !description){
+            throw new Error ("All fields are requiered!")
+        }
+        const newHouse = await adService.createNewAd({headline, location, name, description, author: req.user._id})//encoded body-to, which we receive, will create a new cube
+        //redirect
+        res.redirect('/')
 
-//     } catch(error){
-//         const errors = parser.parseError(error)
-//         res.render('create', {errors})
-//     }
+    } catch(error){
+        const errors = parser.parseError(error)
+        res.render('create', {errors})
+    }
 
-// }
+}
 
-// exports.getDetails = async (req, res) => {
+exports.getDetails = async (req, res) => {
 
-//     let currentHouse = await housingService.getOneHouse(req.params.houseId)//it makes a request to the DB and gives us back all accessories with all details and infos/not only the ID/
-//                                        .populate('rentedHome') 
-//                                        .populate('owner')         
-//                                        .lean()
+    let currentAd = await adService.getOneAd(req.params.adId)//it makes a request to the DB and gives us back all accessories with all details and infos/not only the ID/
+                                       .populate('usersApplied') 
+                                       .populate('author')         
+                                       .lean()
 
-//      if(!currentHouse){
-//     return res.redirect('/404')
-//       }
+     if(!currentAd){
+    return res.redirect('/404')
+      }
 
-// let isLogged = false
-// let rentedBy = currentHouse.rentedHome.map(x =>x.name)
+let appliedBy = currentAd.usersApplied
 
-// let isRented = true
-// let isAvailable = true
+let thereIsCandidates = true
+if(appliedBy.length == 0){
+    thereIsCandidates = false
+}
 
-      
-  
-// if(rentedBy.length == 0){
-//     isRented = false
-// }
-//   if(pieces == 0){
-//           isAvailable = false
-// }
+let isLogged = false
 
-//       rentedBy = rentedBy.join(', ')
+if(req.user){
+    isLogged = true
+    const isOwner = adUtility.isAdOwner(req.user, currentAd)
+    const isAppliedByCurrentUser= await adUtility.isApplied(req.user._id, req.params.adId)
 
-// if(req.user){
-//     isLogged = true
+    res.render('details', {currentAd, isOwner, isAppliedByCurrentUser, appliedBy, thereIsCandidates, isLogged})
 
-    
-//     const isOwner = houseUtility.isHouseOwner(req.user, currentHouse)
-//     const isRentedbyCurrentUser= await houseUtility.isRentedAlready(req.user._id, req.params.houseId)
-//     console.log(isRentedbyCurrentUser)
+} else {
+    res.render('details', {currentAd, isLogged})
+}
+}
 
-//     res.render('details', {currentHouse, isOwner, isRentedbyCurrentUser, isRented, rentedBy, isAvailable, isLogged})
-// } else {
-//     res.render('details', {currentHouse, isRented, rentedBy, isLogged})
-// }
-// }
+exports.apply = async (req,res) =>{
+    const currentAd = await adService.getOneAd(req.params.adId)
+    const isOwner = adUtility.isAdOwner(req.user, currentAd)
 
-// exports.rent = async (req,res) =>{
-//     const currentHouse = await housingService.getOneHouse(req.params.houseId)
-//     const isOwner = houseUtility.isHouseOwner(req.user, currentHouse)
+    if(isOwner){
+        res.redirect('/')
+    } else {
+        currentAd.usersApplied.push(req.user._id)
+    await currentAd.save()
+    res.redirect(`/${req.params.adId}/details`)
+    }
 
-//     if(isOwner){
-//         res.redirect('/')
-//     } else {
-//     currentHouse.rentedHome.push(req.user._id)
-//     currentHouse.prices--
-//     await currentHouse.save()
-//     res.redirect(`/${req.params.houseId}/details`)
-//     }
-
-// }
+}
 
 
-// exports.getEditPage = async (req,res) => {
-//     const currentHouse = await housingService.getOneHouse(req.params.houseId).populate('owner').lean()
-//     const isOwner = houseUtility.isHouseOwner(req.user, currentHouse)
+exports.getEditPage = async (req,res) => {
+    const currentAd = await adService.getOneAd(req.params.adId).populate('author').lean()
+    const isOwner = adUtility.isAdOwner(req.user, currentAd)
 
-//     if(!isOwner){
-//         res.redirect('/')
-//     } else {
-//         res.render('edit', {currentHouse})
-//     }
-// }
+    if(!isOwner){
+        res.redirect('/')
+    } else {
+        res.render('edit', {currentAd})
+    }
+}
 
 
 
-// exports.postEditedHouse = async (req,res) => {
-//     const {name, type, year, city, imageUrl, description, prices} = req.body
-//     try{
-//         if(!name || !type || !year || !city || !imageUrl || !description || !prices){
-//             throw new Error ("All fields are requiered!")
-//         }
-//         const updatedHouse = await housingService.update(req.params.houseId,{name, type, year, city, imageUrl, description, prices} )//encoded body-to, which we receive, will create a new cube
+exports.postEditedAd = async (req,res) => {
+    const {headline, location, name, description } = req.body
 
-//         res.redirect(`/${req.params.houseId}/details`)
+    try{
+        if(!headline || !location || !name || !description){
+            throw new Error ("All fields are requiered!")
+        }
+        const updatedAd = await adService.update(req.params.adId,  {headline, location, name, description } )//encoded body-to, which we receive, will create a new cube
 
-//     } catch(error){
-//         const errors = parser.parseError(error)
-//         res.render(`edit`, {errors})
-//     }
-// }
+        res.redirect(`/${req.params.adId}/details`)
 
-
-// exports.getDeleteHouse= async (req, res) => {
-//     const house = await housingService.getOneHouse(req.params.houseId).populate('owner').lean()
-//     const isOwner = houseUtility.isHouseOwner(req.user, house)
-
-//     if(!isOwner){
-//         res.redirect('/')
-//     } else {
-//    const test = await housingService.deleteHouse(req.params.houseId)
-//    res.redirect('/')
-//     }
-// }
-
-// exports.getSearchPage = async (req,res) => {
-
-//     let isSearched = false
-//     res.render('search', {isSearched})
-// }
-
-// exports.getSearchPagewithResults = async (req, res) => {
-//     let isSearched = true
-//     const {searchedItem} = req.body
-
-//     const allMatches = await housingService.getSearchedbyType(searchedItem).lean()
-//     console.log(allMatches)
+    } catch(error){
+        const errors = parser.parseError(error)
+        res.render(`edit`, {errors})
+    }
+}
 
 
-//     res.render('search', {allMatches, isSearched})
-// }
+exports.getDeleteAd= async (req, res) => {
+    const ad = await adService.getOneAd(req.params.adId).populate('author').lean()
+    const isOwner = adUtility.isAdOwner(req.user, ad)
+
+    if(!isOwner){
+        res.redirect('/')
+    } else {
+   const test = await adService.deleteAd(req.params.adId)
+   res.redirect('/')
+    }
+}
+
+exports.getSearchPage = async (req,res) => {
+
+    let isSearched = false
+    res.render('search', {isSearched})
+}
+
+exports.getSearchPagewithResults = async (req, res) => {
+    let isSearched = true
+    const {searchedItem} = req.body
+
+    const allAds = await adService.getAllAds().populate('author').lean()
+    const matches = allAds.filter(x => x.author.email == searchedItem)
+
+    res.render('search', {matches, isSearched})
+}
