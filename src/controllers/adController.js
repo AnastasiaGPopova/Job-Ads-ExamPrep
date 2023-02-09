@@ -129,7 +129,7 @@ exports.getSearchPagewithResults = async (req, res) => {
     const {searchedItem} = req.body
 
     const allAds = await adService.getAllAds().populate('author').lean()
-    const matches = allAds.filter(x => x.author.email == searchedItem)
+    const matches = allAds.filter(x => x.author.email.toLowerCase() == searchedItem.toLowerCase() )
 
     res.render('search', {matches, isSearched})
 }
